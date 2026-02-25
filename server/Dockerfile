@@ -1,4 +1,12 @@
-FROM node:25.6.1-alpine3.23
-COPY . .
+FROM node:25.6.1-alpine3.23 AS build
+COPY package.json .
 RUN npm install
-CMD yarn dev
+COPY tsconfig.json .
+COPY src src
+RUN yarn build
+
+FROM node:25.6.1-alpine3.23
+COPY --from=build dist dist
+COPY --from=build node_modules node_modules
+COPY --from=build package.json .
+CMD yarn start
